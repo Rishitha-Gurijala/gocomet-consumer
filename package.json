@@ -1,0 +1,25 @@
+{
+  "name": "price-calculator",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "dev": "next",
+    "start": "node index.js",
+    "prettier": "npx prettier . --write"
+  },
+  "author": "Rishitha",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "dotenv": "^16.4.5",
+    "mongodb": "^6.19.0",
+    "redis": "^5.8.2"
+  },
+  "lint-staged": {
+    "*.js": [
+      "npm test",
+      "git add"
+    ]
+  }
+}
