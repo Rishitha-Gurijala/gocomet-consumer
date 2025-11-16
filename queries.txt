@@ -1,9 +1,13 @@
 
 
-CREATE TABLE drivers (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, latitude VARCHAR(100) NOT NULL, longitude VARCHAR(100) NOT NULL, users VARCHAR(1000)[]);
+CREATE TABLE drivers (id INT PRIMARY KEY, name VARCHAR(100) , latitude VARCHAR(100) , longitude VARCHAR(100) , is_available VARCHAR(100), password VARCHAR(100), users JSON);
 
 ALTER TABLE drivers ADD COLUMN users JSON NOT NULL;
 ALTER TABLE drivers ADD COLUMN is_available VARCHAR(100);
+ALTER TABLE rides ADD COLUMN status VARCHAR(100);
+ALTER TABLE rides ADD COLUMN driverId INT;
+ALTER TABLE rides ADD COLUMN fare INT;
+
 
 CREATE TABLE redisBackup ( regionNo INT PRIMARY KEY, users VARCHAR(1000) NOT NULL);
 
@@ -11,6 +15,7 @@ INSERT INTO drivers (id, name, latitude, longitude, users)VALUES (2222, "varma",
 
 UPDATE drivers SET users = JSON_ARRAY_APPEND(users, '$', '1234') WHERE id = 1111;
 UPDATE drivers SET is_available = "true";
+UPDATE rides SET fare = "true";
 
 INSERT INTO redisBackup (regionNo, users)VALUES (2, "[]");
 INSERT INTO redisBackup (regionNo, users)VALUES (3, "[]");

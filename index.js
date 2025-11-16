@@ -31,17 +31,11 @@ async function consumeMessage() {
           const { userId, source, destination } = content;
 
           await createRide(db, { ...content, messageId });
-          // await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          // await updatePlayers(db, playerId, gameId, winAmount, betAmount, {
-          //   ...content,
-          //   messageId,
-          // });
 
           channel.ack(msg);
-          console.log(`Successfully processed message: ${messageId}`);
+          console.log(`Successfully processed message: ${userId}`);
         } catch (error) {
-          console.error(`Error processing message ${messageId}:`, error);
+          console.error(`Error processing message ${userId}:`, error);
           channel.nack(msg, false, true);
         }
       }
@@ -64,8 +58,16 @@ async function createRide(db, body) {
   const [result] = await db
     .promise()
     .query(
-      "INSERT INTO rides (id, userId, pickup_lat, pickup_long, dropoff_lat, dropoff_long) VALUES (?, ?, ?, ?, ?, ?)",
-      [id, userId, pickup_lat, pickup_long, dropoff_lat, dropoff_long],
+      "INSERT INTO rides (id, userId, pickup_lat, pickup_long, dropoff_lat, dropoff_long, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [
+        id,
+        userId,
+        pickup_lat,
+        pickup_long,
+        dropoff_lat,
+        dropoff_long,
+        "WAITING",
+      ],
     );
   let query = `
     SELECT id,
@@ -89,17 +91,18 @@ async function createRide(db, body) {
     .query(query, [pickup_lat, pickup_long, pickup_lat]);
   let driverIds = rows.map((driver) => driver.id);
   userId = parseInt(userId);
-  const [update] = await db.promise().query(
-    `UPDATE drivers SET users = JSON_ARRAY_APPEND(users, '$', ?) WHERE id IN (${driverIds})`,
-    [userId]
-  );
+  const [update] = await db
+    .promise()
+    .query(
+      `UPDATE drivers SET users = JSON_ARRAY_APPEND(users, '$', ?) WHERE id IN (${driverIds})`,
+      [userId],
+    );
   // let message = {
   //   userId: userId,
   //   pickup_lat,
   //   pickup_long,
   // };
   // await publishMessage(message);
-  console.log("db");
 }
 
 async function publishMessage(message) {
