@@ -35,7 +35,7 @@ async function consumeMessage() {
           channel.ack(msg);
           console.log(`Successfully processed message: ${userId}`);
         } catch (error) {
-          console.error(`Error processing message ${userId}:`, error);
+          console.error(`Error processing message :`, error);
           channel.nack(msg, false, true);
         }
       }
@@ -70,21 +70,21 @@ async function createRide(db, body) {
       ],
     );
   let query = `
-    SELECT id,
-    (
-      6371 * ACOS(
-        COS(RADIANS(?)) *
-        COS(RADIANS(latitude)) *
-        COS(RADIANS(longitude) - RADIANS(?)) +
-        SIN(RADIANS(?)) *
-        SIN(RADIANS(latitude))
-      )
-    ) AS distance
-    FROM drivers
-    WHERE is_available = "true"
-    HAVING distance < 5
-    ORDER BY distance ASC
-  `;
+      SELECT id,
+      (
+        6371 * ACOS(
+          COS(RADIANS(?)) *
+          COS(RADIANS(latitude)) *
+          COS(RADIANS(longitude) - RADIANS(?)) +
+          SIN(RADIANS(?)) *
+          SIN(RADIANS(latitude))
+        )
+      ) AS distance
+      FROM drivers
+      WHERE is_available = "true"
+      HAVING distance < 5
+      ORDER BY distance ASC
+    `;
 
   const [rows] = await db
     .promise()
@@ -97,30 +97,6 @@ async function createRide(db, body) {
       `UPDATE drivers SET users = JSON_ARRAY_APPEND(users, '$', ?) WHERE id IN (${driverIds})`,
       [userId],
     );
-  // let message = {
-  //   userId: userId,
-  //   pickup_lat,
-  //   pickup_long,
-  // };
-  // await publishMessage(message);
-}
-
-async function publishMessage(message) {
-  try {
-    let queue = "userBookings";
-    const connection = await amqp.connect(RABBITMQ_URL);
-    const channel = await connection.createChannel();
-    await channel.assertQueue(queue, { durable: true });
-    channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)), {
-      persistent: true,
-    });
-    console.log("Message sent:", message.userId);
-    setTimeout(() => {
-      connection.close();
-    }, 500);
-  } catch (error) {
-    console.error("Error publishing message:", error);
-  }
 }
 
 function generateFourDigitRandom() {
